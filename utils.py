@@ -1,6 +1,8 @@
 import numpy as np
 from pandas_datareader import data
 import matplotlib.pyplot as plt
+from pytrends.request import TrendReq
+
 
 def plot_Stock_Price(start_date, end_date, *stock_names, figsize=(10,6)):
     df = [data.get_data_yahoo(stock_name, start_date, end_date) for stock_name in stock_names]
@@ -43,7 +45,6 @@ def trade(stockname: str, start_date: str, end_date: str, investmentValue: int):
    
 
 # Plot trends and stock price on the same chart (Normalized)
-from pytrends.request import TrendReq
 def compare_price_trend(symbol="BABA", keyword="Alibaba", start_date='2020-09-01', end_date='2020-12-28'):
     pytrends = TrendReq(hl='zh-CN', tz=360)
     kw_list = [keyword]
