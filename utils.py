@@ -40,3 +40,16 @@ def trade(stockname: str, start_date: str, end_date: str, investmentValue: int):
     days = (df.index[-1] - df.index[0]).days
     annualRateOfReturn = ((gain / investmentValue)**(1/days) - 1)*365
     print(f"Annual rate of return: {annualRateOfReturn}\n" )
+   
+
+# Plot trends and stock price on the same chart (Normalized)
+from pytrends.request import TrendReq
+def compare_price_trend(symbol="BABA", keyword="Alibaba", start_date='2020-09-01', end_date='2020-12-28'):
+    pytrends = TrendReq(hl='zh-CN', tz=360)
+    kw_list = [keyword]
+    pytrends.build_payload(kw_list, cat=0, timeframe=start_date+' '+end_date, geo='', gprop='')
+    plt.figure(figsize=(10,6))
+    plt.plot(normalize(data.get_data_yahoo(symbol, start_date, end_date)["Adj Close"]))
+    plt.plot(normalize(pytrends.interest_over_time()[keyword]), marker="o")
+    plt.legend(["Price", "Trend"])
+    plt.show()
