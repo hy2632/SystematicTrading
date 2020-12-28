@@ -45,6 +45,9 @@ def trade(stockname: str, start_date: str, end_date: str, investmentValue: int):
    
 
 # Plot trends and stock price on the same chart (Normalized)
+def normalize(x):
+    return x / np.max(x)
+
 def compare_price_trend(symbol="BABA", keyword="Alibaba", start_date='2020-09-01', end_date='2020-12-28'):
     pytrends = TrendReq(hl='zh-CN', tz=360)
     kw_list = [keyword]
