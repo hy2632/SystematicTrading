@@ -8,11 +8,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import backtrader.analyzers as btanalyzers
 import talib
+import time
+import pdb
 
 
 class Ketler(bt.Indicator):
     params = dict(ema=20, atr=17)
-    lines = ()
+    lines = ("expo", "atr", "upper", "lower")  # Define the four lines
     plotinfo = dict(subplot=False)
     plotlines = dict(
         upper=dict(ls='--'),
@@ -20,8 +22,10 @@ class Ketler(bt.Indicator):
     )
 
     def __init__(self):
-        self.l.expo = talib.EMA(self.datas[0].close, timeperiod=self.params.ema)
-        self.l.atr = talib.ATR(self.data.high, self.data.low, self.data.close,  timeperiod=self.params.atr)
+        self.l.expo = bt.talib.EMA(self.datas[0].close, timeperiod=self.params.ema)
+        self.l.atr = bt.talib.ATR(self.data.high, self.data.low, self.data.close, timeperiod=self.params.atr)
+        self.l.upper = self.l.expo + self.l.atr
+        self.l.lower = self.l.expo - self.l.atr
 
 
 class Strategy(bt.Strategy):
@@ -31,7 +35,8 @@ class Strategy(bt.Strategy):
         print(f"{dt.isoformat()}, {txt}")
 
     def __init__(self):
-        pass
+        self.ketler = Ketler()
+        self.close = self.data.close
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -66,20 +71,34 @@ class Strategy(bt.Strategy):
         if not trade.isclosed:
             return
 
-        self.log("OPERATION PROFIT, GROSS %.2F, NET %.2F" % (trade.pnl, trade.pnlcomm))
+        self.log("OPERATION PROFIT, GROSS %.2f, NET %.2f" % (trade.pnl, trade.pnlcomm))
 
     def next(self):
-        pass
+        """ Apply the Ketler Strategy """
+        if not self.position:
+            if self.close[0] > self.ketler.upper[0]:
+                self.order = self.order_target_percent(target=0.95)
+        else:
+            if self.close[0] < self.ketler.expo[0]:
+                self.order = self.sell()
 
 
 if __name__ == "__main__":
     cerebro = bt.Cerebro()
+
+    start_time = time.time()
+    print("Loading Data from Yahoo Finance ...")
+
     data = bt.feeds.YahooFinanceData(
         dataname="AAPL",
         fromdate=datetime.datetime(2015, 1, 1),
-        todate=datetime.datetime(2020, 12, 31),
+        todate=datetime.datetime(2020, 12, 14),
         timeframe=bt.TimeFrame.Days,
     )
+
+    end_time = time.time()
+    print("Data Loaded.")
+
     cerebro.adddata(data)
     cerebro.addstrategy(Strategy)
     cerebro.broker.setcash(1000000)
