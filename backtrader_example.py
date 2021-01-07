@@ -1,6 +1,7 @@
 import datetime
 import backtrader as bt
 
+
 class TestStrategy(bt.Strategy):
     params = dict(maperiod=15)
 
@@ -20,12 +21,12 @@ class TestStrategy(bt.Strategy):
 
         # Add MA indicator
         self.sma = bt.indicators.MovingAverageSimple(
-            self.datas[0], period=self.params.maperiod
-        )
+            self.datas[0], period=self.params.maperiod)
 
         # Indicators for the plotting show
         bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
-        bt.indicators.WeightedMovingAverage(self.datas[0], period=25,
+        bt.indicators.WeightedMovingAverage(self.datas[0],
+                                            period=25,
                                             subplot=True)
         bt.indicators.StochasticSlow(self.datas[0])
         bt.indicators.MACDHisto(self.datas[0])
@@ -42,18 +43,15 @@ class TestStrategy(bt.Strategy):
         # Attention: broker could reject order if not enough cash
         if order.status in [order.Completed]:
             if order.isbuy():
-                self.log(
-                    'BUY EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                    (order.executed.price,
-                     order.executed.value,
-                     order.executed.comm))
+                self.log('BUY EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
+                         (order.executed.price, order.executed.value,
+                          order.executed.comm))
 
                 self.buyprice = order.executed.price
                 self.buycomm = order.executed.comm
             else:  # Sell
                 self.log('SELL EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                         (order.executed.price,
-                          order.executed.value,
+                         (order.executed.price, order.executed.value,
                           order.executed.comm))
 
             self.bar_executed = len(self)
@@ -110,21 +108,21 @@ if __name__ == '__main__':
     # Create a Data Feed
     data = bt.feeds.YahooFinanceData(
         dataname="AAPL",
-        # Do not pass values before this date
-        fromdate=datetime.datetime(2000, 1, 1),
-        # Do not pass values before this date
-        todate=datetime.datetime(2000, 12, 31),
-        # Do not pass values after this date
-        reverse=False)
+        fromdate=datetime.datetime(2015, 1, 1),
+        todate=datetime.datetime(2020, 12, 14),
+    )
 
     # Add the Data Feed to Cerebro
     cerebro.adddata(data)
 
     # Set our desired cash start
-    cerebro.broker.setcash(1000.0)
+    cerebro.broker.setcash(1000000)
 
     # Add a FixedSize sizer according to the stake
-    cerebro.addsizer(bt.sizers.FixedSize, stake=10)
+    # cerebro.addsizer(bt.sizers.FixedSize, stake=10)
+    
+    cerebro.addsizer(bt.sizers.PercentSizer, percents=98)
+
 
     # Set the commission
     cerebro.broker.setcommission(commission=0.0)

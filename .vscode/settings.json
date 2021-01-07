@@ -3,5 +3,6 @@
     "python.linting.pycodestyleEnabled": false,
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
-    "jupyter.jupyterServerType": "local"
+    "jupyter.jupyterServerType": "local",
+    "python.formatting.provider": "yapf"
 }
