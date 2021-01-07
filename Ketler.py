@@ -4,6 +4,9 @@ Ketler Channel
 
 import backtrader as bt
 import datetime
+import pandas as pd
+import pdb
+
 
 class Ketler(bt.Indicator):
     params = dict(ema=20, atr=17)
@@ -85,8 +88,22 @@ if __name__ == "__main__":
     cerebro.broker.setcommission(commission=0)
     cerebro.addsizer(bt.sizers.PercentSizer, percents=98)
 
+    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name = "sharpe")
+    cerebro.addanalyzer(bt.analyzers.DrawDown, _name="drawdown")
+    cerebro.addanalyzer(bt.analyzers.Returns, _name = "returns")
+
     print("Start Portfolio Value {}".format(cerebro.broker.get_value()))
     back = cerebro.run()
     print("end portfolio value {}".format(cerebro.broker.get_value()))
+
+    par_list = [[
+        x.analyzers.returns.get_analysis()["rtot"],
+        x.analyzers.returns.get_analysis()["rnorm100"],
+        x.analyzers.drawdown.get_analysis()["max"]["drawdown"],
+        x.analyzers.sharpe.get_analysis()["sharperatio"],
+    ] for x in back]
+
+    par_df = pd.DataFrame(par_list, columns=["Total Return", "APR", "Drawdown", "SharpeRatio"])
+    print(par_df)
 
     cerebro.plot(style="candle")
