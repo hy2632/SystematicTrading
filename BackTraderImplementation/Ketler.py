@@ -4,13 +4,6 @@ Ketler Channel
 
 import backtrader as bt
 import datetime
-import pandas as pd
-import matplotlib.pyplot as plt
-import backtrader.analyzers as btanalyzers
-import talib
-import time
-import pdb
-
 
 class Ketler(bt.Indicator):
     params = dict(ema=20, atr=17)
@@ -32,6 +25,7 @@ class Strategy(bt.Strategy):
     ''' Logging function for strategy'''
 
     def log(self, txt, dt=None):
+        dt = dt or self.datas[0].datetime.date(0)
         print(f"{dt.isoformat()}, {txt}")
 
     def __init__(self):
@@ -46,19 +40,11 @@ class Strategy(bt.Strategy):
         if order.status in [order.Completed]:
             if order.isbuy():
                 self.log(
-                    "BUY EXECUTED, Price: {:.2%f}, Cost: {:.2%f}, Comm {:.2%f}".format(
-                        order.executed.price,
-                        order.executed.value,
-                        order.executed.comm,
-                    )
+                    f"BUY EXECUTED, Price: {order.executed.price: .2f}, Cost: {order.executed.value: .2f}, Comm: {order.executed.comm: .2f}"
                 )
             else:
                 self.log(
-                    "SELL EXECUTED, Price: {:.2%f}, Cost: {:.2%f}, Comm {:.2%f}".format(
-                        order.executed.price,
-                        order.executed.value,
-                        order.executed.comm,
-                    )
+                    f"SELL EXECUTED, Price: {order.executed.price: .2f}, Cost: {order.executed.value: .2f}, Comm: {order.executed.comm: .2f}"
                 )
             self.bar_executed = len(self)
 
@@ -86,18 +72,12 @@ class Strategy(bt.Strategy):
 if __name__ == "__main__":
     cerebro = bt.Cerebro()
 
-    start_time = time.time()
-    print("Loading Data from Yahoo Finance ...")
-
     data = bt.feeds.YahooFinanceData(
         dataname="AAPL",
         fromdate=datetime.datetime(2015, 1, 1),
         todate=datetime.datetime(2020, 12, 14),
         timeframe=bt.TimeFrame.Days,
     )
-
-    end_time = time.time()
-    print("Data Loaded.")
 
     cerebro.adddata(data)
     cerebro.addstrategy(Strategy)
